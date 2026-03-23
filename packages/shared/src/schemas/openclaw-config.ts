@@ -284,11 +284,32 @@ const feishuChannelSchema = z
   })
   .passthrough();
 
+const telegramAccountSchema = z.object({
+  enabled: z.boolean().default(true),
+  botToken: z.string(),
+  dmPolicy: z.enum(["pairing", "allowlist", "open"]).optional(),
+  groupPolicy: z.enum(["open", "allowlist", "disabled"]).optional(),
+  allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
+  streaming: z.enum(["none", "partial", "full"]).optional(),
+  proxy: z.string().optional(),
+});
+
+const telegramChannelSchema = z.object({
+  enabled: z.boolean().optional(),
+  dmPolicy: z.enum(["pairing", "allowlist", "open"]).optional(),
+  groupPolicy: z.enum(["open", "allowlist", "disabled"]).optional(),
+  allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
+  streaming: z.enum(["none", "partial", "full"]).optional(),
+  proxy: z.string().optional(),
+  accounts: z.record(z.string(), telegramAccountSchema),
+});
+
 const channelsConfigSchema = z
   .object({
     slack: slackChannelSchema.optional(),
     discord: discordChannelSchema.optional(),
     feishu: feishuChannelSchema.optional(),
+    telegram: telegramChannelSchema.optional(),
   })
   .passthrough();
 
@@ -501,4 +522,5 @@ export type AgentConfig = z.infer<typeof agentSchema>;
 export type SlackAccountConfig = z.infer<typeof slackAccountSchema>;
 export type DiscordAccountConfig = z.infer<typeof discordAccountSchema>;
 export type FeishuAccountConfig = z.infer<typeof feishuAccountSchema>;
+export type TelegramAccountConfig = z.infer<typeof telegramAccountSchema>;
 export type BindingConfig = z.infer<typeof bindingSchema>;

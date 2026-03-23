@@ -287,6 +287,17 @@ export const postApiV1ChannelsFeishuConnect = <ThrowOnError extends boolean = fa
     });
 };
 
+export const postApiV1ChannelsTelegramConnect = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1ChannelsTelegramConnectData, ThrowOnError>) => {
+    return (options?.client ?? _heyApiClient).post<PostApiV1ChannelsTelegramConnectResponse, PostApiV1ChannelsTelegramConnectError, ThrowOnError>({
+        url: '/api/v1/channels/telegram/connect',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers
+        }
+    });
+};
+
 export const getApiV1ChannelsByChannelIdStatus = <ThrowOnError extends boolean = false>(options: Options<GetApiV1ChannelsByChannelIdStatusData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetApiV1ChannelsByChannelIdStatusResponse, GetApiV1ChannelsByChannelIdStatusError, ThrowOnError>({
         url: '/api/v1/channels/{channelId}/status',

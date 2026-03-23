@@ -5,6 +5,7 @@ export const channelTypeSchema = z.enum([
   "discord",
   "feishu",
   "wechat",
+  "telegram",
 ]);
 
 export const channelStatusSchema = z.enum([
@@ -38,6 +39,10 @@ export const connectFeishuSchema = z.object({
 
 export const connectWechatSchema = z.object({
   accountId: z.string().min(1),
+});
+
+export const connectTelegramSchema = z.object({
+  botToken: z.string().min(1),
 });
 
 export const wechatQrStartResponseSchema = z.object({
@@ -80,6 +85,7 @@ export type ConnectSlackInput = z.infer<typeof connectSlackSchema>;
 export type ConnectDiscordInput = z.infer<typeof connectDiscordSchema>;
 export type ConnectFeishuInput = z.infer<typeof connectFeishuSchema>;
 export type ConnectWechatInput = z.infer<typeof connectWechatSchema>;
+export type ConnectTelegramInput = z.infer<typeof connectTelegramSchema>;
 export type WechatQrStartResponse = z.infer<typeof wechatQrStartResponseSchema>;
 export type WechatQrWaitResponse = z.infer<typeof wechatQrWaitResponseSchema>;
 export type ChannelResponse = z.infer<typeof channelResponseSchema>;

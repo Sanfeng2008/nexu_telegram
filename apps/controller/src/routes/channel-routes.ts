@@ -6,6 +6,7 @@ import {
   connectDiscordSchema,
   connectFeishuSchema,
   connectSlackSchema,
+  connectTelegramSchema,
   connectWechatSchema,
   slackOAuthUrlResponseSchema,
   wechatQrStartResponseSchema,
@@ -271,6 +272,47 @@ export function registerChannelRoutes(
         },
         200,
       );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/v1/channels/telegram/connect",
+      tags: ["Channels"],
+      request: {
+        body: {
+          content: { "application/json": { schema: connectTelegramSchema } },
+        },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: channelResponseSchema } },
+          description: "Connected telegram channel",
+        },
+        409: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Invalid credentials",
+        },
+      },
+    }),
+    async (c) => {
+      try {
+        return c.json(
+          await container.channelService.connectTelegram(c.req.valid("json")),
+          200,
+        );
+      } catch (error) {
+        return c.json(
+          {
+            message:
+              error instanceof Error
+                ? error.message
+                : "Telegram connect failed",
+          },
+          409,
+        );
+      }
     },
   );
 

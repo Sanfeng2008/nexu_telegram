@@ -5,6 +5,7 @@ import type {
   ConnectDiscordInput,
   ConnectFeishuInput,
   ConnectSlackInput,
+  ConnectTelegramInput,
 } from "@nexu/shared";
 import {
   type connectIntegrationResponseSchema,
@@ -728,6 +729,47 @@ export class NexuConfigStore {
                 input.verificationToken,
             }
           : {}),
+      },
+    }));
+
+    return channel;
+  }
+
+  async connectTelegram(
+    input: ConnectTelegramInput & { botUsername?: string | null; botUserId?: string | null },
+  ): Promise<ChannelResponse> {
+    const bot = await this.getOrCreateDefaultBot();
+    const connectedAt = now();
+    const botUserId = input.botUserId ?? crypto.randomUUID();
+    const accountId = `telegram-${botUserId}`;
+    const channel: ChannelResponse = {
+      id: crypto.randomUUID(),
+      botId: bot.id,
+      channelType: "telegram",
+      accountId,
+      status: "connected",
+      teamName: input.botUsername ?? null,
+      appId: botUserId,
+      botUserId: null,
+      createdAt: connectedAt,
+      updatedAt: connectedAt,
+    };
+
+    await this.store.update((config) => ({
+      ...config,
+      channels: [
+        ...config.channels.filter(
+          (existing) =>
+            !(
+              existing.channelType === channel.channelType &&
+              existing.accountId === channel.accountId
+            ),
+        ),
+        channel,
+      ],
+      secrets: {
+        ...config.secrets,
+        [`channel:${channel.id}:botToken`]: input.botToken,
       },
     }));
 

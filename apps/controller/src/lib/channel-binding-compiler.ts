@@ -4,6 +4,7 @@ import type {
   FeishuAccountConfig,
   OpenClawConfig,
   SlackAccountConfig,
+  TelegramAccountConfig,
 } from "@nexu/shared";
 import type { BotResponse, ChannelResponse } from "@nexu/shared";
 
@@ -47,6 +48,7 @@ export function compileChannelsConfig(params: {
   const discordAccounts: Record<string, DiscordAccountConfig> = {};
   const feishuAccounts: Record<string, FeishuAccountConfig> = {};
   const wechatAccounts: Record<string, { enabled: boolean }> = {};
+  const telegramAccounts: Record<string, TelegramAccountConfig> = {};
   const socketAppToken = process.env.SLACK_SOCKET_MODE_APP_TOKEN;
   const useSlackSocketMode =
     typeof socketAppToken === "string" && socketAppToken.length > 0;
@@ -91,6 +93,18 @@ export function compileChannelsConfig(params: {
 
     if (channel.channelType === "wechat") {
       wechatAccounts[channel.accountId] = { enabled: true };
+      continue;
+    }
+
+    if (channel.channelType === "telegram") {
+      telegramAccounts[channel.accountId] = {
+        enabled: true,
+        botToken: secret("botToken"),
+        dmPolicy: "open",
+        groupPolicy: "open",
+        allowFrom: ["*"],
+        streaming: "partial",
+      };
       continue;
     }
 
@@ -182,6 +196,18 @@ export function compileChannelsConfig(params: {
           "openclaw-weixin": {
             enabled: true,
             accounts: wechatAccounts,
+          },
+        }
+      : {}),
+    ...(Object.keys(telegramAccounts).length > 0
+      ? {
+          telegram: {
+            enabled: true,
+            dmPolicy: "open" as const,
+            groupPolicy: "open" as const,
+            allowFrom: ["*"],
+            streaming: "partial" as const,
+            accounts: telegramAccounts,
           },
         }
       : {}),

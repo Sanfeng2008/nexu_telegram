@@ -4,6 +4,7 @@ import type {
   ConnectDiscordInput,
   ConnectFeishuInput,
   ConnectSlackInput,
+  ConnectTelegramInput,
 } from "@nexu/shared";
 import type { NexuConfigStore } from "../store/nexu-config-store.js";
 import type { OpenClawSyncService } from "./openclaw-sync-service.js";
@@ -152,6 +153,37 @@ export class ChannelService {
     }
 
     const channel = await this.configStore.connectFeishu(input);
+    await this.syncService.writePlatformTemplatesForBot(channel.botId);
+    await this.syncService.syncAll();
+    return channel;
+  }
+
+  async connectTelegram(input: ConnectTelegramInput) {
+    const resp = await fetch(
+      `https://api.telegram.org/bot${input.botToken}/getMe`,
+      { signal: timeoutSignal(5000) },
+    );
+    if (!resp.ok) {
+      throw new Error(
+        resp.status === 401
+          ? "Invalid Telegram bot token"
+          : `Telegram API error (${resp.status})`,
+      );
+    }
+    const data = (await resp.json()) as {
+      ok: boolean;
+      result?: { id: number; username?: string };
+      description?: string;
+    };
+    if (!data.ok || !data.result) {
+      throw new Error(data.description ?? "Telegram API error");
+    }
+
+    const channel = await this.configStore.connectTelegram({
+      botToken: input.botToken,
+      botUsername: data.result.username ?? null,
+      botUserId: String(data.result.id),
+    });
     await this.syncService.writePlatformTemplatesForBot(channel.botId);
     await this.syncService.syncAll();
     return channel;

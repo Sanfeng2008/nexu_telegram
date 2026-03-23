@@ -680,7 +680,7 @@ export type GetApiV1ChannelsResponses = {
         channels: Array<{
             id: string;
             botId: string;
-            channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+            channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
             accountId: string;
             status: 'pending' | 'connected' | 'disconnected' | 'error';
             teamName: string;
@@ -764,7 +764,7 @@ export type PostApiV1ChannelsSlackConnectResponses = {
     200: {
         id: string;
         botId: string;
-        channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
         accountId: string;
         status: 'pending' | 'connected' | 'disconnected' | 'error';
         teamName: string;
@@ -807,7 +807,7 @@ export type PostApiV1ChannelsDiscordConnectResponses = {
     200: {
         id: string;
         botId: string;
-        channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
         accountId: string;
         status: 'pending' | 'connected' | 'disconnected' | 'error';
         teamName: string;
@@ -850,7 +850,7 @@ export type PostApiV1ChannelsFeishuConnectResponses = {
     200: {
         id: string;
         botId: string;
-        channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
         accountId: string;
         status: 'pending' | 'connected' | 'disconnected' | 'error';
         teamName: string;
@@ -862,6 +862,46 @@ export type PostApiV1ChannelsFeishuConnectResponses = {
 };
 
 export type PostApiV1ChannelsFeishuConnectResponse = PostApiV1ChannelsFeishuConnectResponses[keyof PostApiV1ChannelsFeishuConnectResponses];
+
+export type PostApiV1ChannelsTelegramConnectData = {
+    body?: {
+        botToken: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/channels/telegram/connect';
+};
+
+export type PostApiV1ChannelsTelegramConnectErrors = {
+    /**
+     * Invalid credentials
+     */
+    409: {
+        message: string;
+    };
+};
+
+export type PostApiV1ChannelsTelegramConnectError = PostApiV1ChannelsTelegramConnectErrors[keyof PostApiV1ChannelsTelegramConnectErrors];
+
+export type PostApiV1ChannelsTelegramConnectResponses = {
+    /**
+     * Connected telegram channel
+     */
+    200: {
+        id: string;
+        botId: string;
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
+        accountId: string;
+        status: 'pending' | 'connected' | 'disconnected' | 'error';
+        teamName: string;
+        appId?: string;
+        botUserId?: string;
+        createdAt: string;
+        updatedAt: string;
+    };
+};
+
+export type PostApiV1ChannelsTelegramConnectResponse = PostApiV1ChannelsTelegramConnectResponses[keyof PostApiV1ChannelsTelegramConnectResponses];
 
 export type GetApiV1ChannelsByChannelIdStatusData = {
     body?: never;
@@ -890,7 +930,7 @@ export type GetApiV1ChannelsByChannelIdStatusResponses = {
     200: {
         id: string;
         botId: string;
-        channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
         accountId: string;
         status: 'pending' | 'connected' | 'disconnected' | 'error';
         teamName: string;
@@ -1033,7 +1073,7 @@ export type PostApiV1ChannelsWechatConnectResponses = {
     200: {
         id: string;
         botId: string;
-        channelType: 'slack' | 'discord' | 'feishu' | 'wechat';
+        channelType: 'slack' | 'discord' | 'feishu' | 'wechat' | 'telegram';
         accountId: string;
         status: 'pending' | 'connected' | 'disconnected' | 'error';
         teamName: string;
