@@ -2295,6 +2295,119 @@
         }
       }
     },
+    "/api/v1/channels/telegram/connect": {
+      "post": {
+        "tags": [
+          "Channels"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "botToken": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "botToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connected telegram channel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "botId": {
+                      "type": "string"
+                    },
+                    "channelType": {
+                      "type": "string",
+                      "enum": [
+                        "slack",
+                        "discord",
+                        "feishu",
+                        "wechat",
+                        "telegram"
+                      ]
+                    },
+                    "accountId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "connected",
+                        "disconnected",
+                        "error"
+                      ]
+                    },
+                    "teamName": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "appId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "botUserId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "botId",
+                    "channelType",
+                    "accountId",
+                    "status",
+                    "teamName",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/channels/wechat/qr-start": {
       "post": {
         "tags": [
@@ -6314,119 +6427,6 @@
                     "ok",
                     "name",
                     "version"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/channels/telegram/connect": {
-      "post": {
-        "tags": [
-          "Channels"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "botToken": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                },
-                "required": [
-                  "botToken"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Connected telegram channel",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "botId": {
-                      "type": "string"
-                    },
-                    "channelType": {
-                      "type": "string",
-                      "enum": [
-                        "slack",
-                        "discord",
-                        "feishu",
-                        "wechat",
-                        "telegram"
-                      ]
-                    },
-                    "accountId": {
-                      "type": "string"
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "pending",
-                        "connected",
-                        "disconnected",
-                        "error"
-                      ]
-                    },
-                    "teamName": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "appId": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "botUserId": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "botId",
-                    "channelType",
-                    "accountId",
-                    "status",
-                    "teamName",
-                    "createdAt",
-                    "updatedAt"
-                  ]
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Invalid credentials",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "message"
                   ]
                 }
               }

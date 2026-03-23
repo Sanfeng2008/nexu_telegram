@@ -773,6 +773,40 @@ const en = {
   "common.loading": "Loading...",
   "common.connect": "Connect",
   "common.disconnect": "Disconnect",
+  "home.channel.telegram": "Telegram",
+  // ── Telegram Setup ──
+  "telegramSetup.stepCreateBot": "Create Bot",
+  "telegramSetup.stepGetToken": "Get Token",
+  "telegramSetup.stepConnect": "Connect",
+  "telegramSetup.step": "Step {{number}}",
+  "telegramSetup.createBotTitle": "Create a Telegram Bot",
+  "telegramSetup.createBotDesc": "Use BotFather to create a new Telegram bot.",
+  "telegramSetup.createStep1": "Open Telegram and search for @BotFather",
+  "telegramSetup.createStep2": "Send /newbot to BotFather",
+  "telegramSetup.createStep3": "Choose a name for your bot",
+  "telegramSetup.createStep4": "Choose a username (must end in 'bot')",
+  "telegramSetup.openBotFather": "Open BotFather",
+  "telegramSetup.getTokenTitle": "Get Your Bot Token",
+  "telegramSetup.getTokenDesc":
+    "After creating your bot, BotFather will provide a token.",
+  "telegramSetup.tokenStep1":
+    "BotFather will send you a token like 123456:ABC-DEF...",
+  "telegramSetup.tokenStep2":
+    "Copy the full token including the number and colon",
+  "telegramSetup.tokenStep3": "Keep this token secret — it controls your bot",
+  "telegramSetup.connectTitle": "Connect Your Bot",
+  "telegramSetup.connectDesc": "Paste your bot token to connect it to Nexu.",
+  "telegramSetup.botTokenLabel": "Bot Token",
+  "telegramSetup.botTokenHint": "Enter the token from BotFather",
+  "telegramSetup.tokenFormat": "Format: 123456789:ABCdefGHI...",
+  "telegramSetup.verifyConnect": "Connect Bot",
+  "telegramSetup.connectSuccess": "Telegram bot {{name}} connected!",
+  "telegramSetup.connectFailed": "Failed to connect Telegram bot",
+  "telegramSetup.helpText": "Need help? ",
+  "telegramSetup.helpLinkText": "View setup guide",
+  "telegramSetup.helpSuffix": "",
+  "telegramSetup.next": "Next",
+  "telegramSetup.previous": "Back",
 } as const;
 
 export default en;

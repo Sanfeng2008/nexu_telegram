@@ -6,7 +6,7 @@ import { InlineModelSelector } from "@/components/inline-model-selector";
 import { useGitHubStars } from "@/hooks/use-github-stars";
 import { getChannelChatUrl } from "@/lib/channel-links";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, Cable, X } from "lucide-react";
+import { ArrowUpRight, Cable, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
   getApiV1Channels,
   getApiV1ChannelsLiveStatus,
   getApiV1Sessions,
+  postApiV1ChannelsTelegramConnect,
 } from "../../lib/api/sdk.gen";
 
 type ChannelLiveStatus =
@@ -101,6 +102,13 @@ const FEISHU_ICON = (
     style={{ objectFit: "contain" }}
   />
 );
+const TELEGRAM_SVG = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="#26A5E4" role="img">
+    <title>Telegram</title>
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+  </svg>
+);
+
 const WECHAT_ICON = (
   <svg width="16" height="16" viewBox="0 0 1024 1024" role="img">
     <title>WeChat</title>
@@ -129,6 +137,12 @@ const ONBOARDING_CHANNELS = [
     recommended: false,
   },
   {
+    id: "telegram",
+    name: "Telegram",
+    icon: TELEGRAM_SVG,
+    recommended: false,
+  },
+  {
     id: "slack",
     name: "Slack",
     icon: SLACK_SVG,
@@ -154,6 +168,12 @@ function getChannelOptions(t: (key: string) => string) {
       id: "feishu",
       name: t("home.channel.feishu"),
       icon: FEISHU_ICON,
+      recommended: false,
+    },
+    {
+      id: "telegram",
+      name: t("home.channel.telegram"),
+      icon: TELEGRAM_SVG,
       recommended: false,
     },
     {
@@ -222,6 +242,7 @@ export function HomePage() {
     "feishu" | "slack" | "discord" | null
   >(null);
   const [wechatQrOpen, setWechatQrOpen] = useState(false);
+  const [telegramOpen, setTelegramOpen] = useState(false);
   const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoHover, setVideoHover] = useState(false);
@@ -586,6 +607,8 @@ export function HomePage() {
                     onClick={() => {
                       if (ch.id === "wechat") {
                         setWechatQrOpen(true);
+                      } else if (ch.id === "telegram") {
+                        setTelegramOpen(true);
                       } else {
                         setModalChannel(
                           ch.id as "feishu" | "slack" | "discord",
@@ -637,6 +660,16 @@ export function HomePage() {
               handleConnected();
             }}
             gatewayReady={runtimeData?.status === "active"}
+          />
+        )}
+
+        {telegramOpen && (
+          <TelegramModal
+            onClose={() => setTelegramOpen(false)}
+            onConnected={() => {
+              setTelegramOpen(false);
+              handleConnected();
+            }}
           />
         )}
       </div>
@@ -843,6 +876,8 @@ export function HomePage() {
                       onClick={() => {
                         if (ch.id === "wechat") {
                           setWechatQrOpen(true);
+                        } else if (ch.id === "telegram") {
+                          setTelegramOpen(true);
                         } else {
                           setModalChannel(
                             ch.id as "feishu" | "slack" | "discord",
@@ -895,6 +930,16 @@ export function HomePage() {
           onClose={() => setWechatQrOpen(false)}
           onConnected={() => {
             setWechatQrOpen(false);
+            handleConnected();
+          }}
+        />
+      )}
+
+      {telegramOpen && (
+        <TelegramModal
+          onClose={() => setTelegramOpen(false)}
+          onConnected={() => {
+            setTelegramOpen(false);
             handleConnected();
           }}
         />
@@ -966,6 +1011,140 @@ function WechatQrModal({
             gatewayReady={gatewayReady}
             showHeader={false}
           />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Telegram Modal ──────────────────────────────────────
+
+function TelegramModal({
+  onClose,
+  onConnected,
+}: {
+  onClose: () => void;
+  onConnected: () => void;
+}) {
+  const { t } = useTranslation();
+  const [botToken, setBotToken] = useState("");
+  const [connecting, setConnecting] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const handleConnect = async () => {
+    if (!botToken.trim()) return;
+    setConnecting(true);
+    try {
+      const { data, error } = await postApiV1ChannelsTelegramConnect({
+        body: { botToken: botToken.trim() },
+      });
+      if (error) {
+        toast.error(
+          (error as { message?: string }).message ??
+            t("telegramSetup.connectFailed"),
+        );
+        return;
+      }
+      toast.success(
+        t("telegramSetup.connectSuccess", {
+          botName: data?.teamName ?? "Telegram Bot",
+        }),
+      );
+      onConnected();
+    } catch {
+      toast.error(t("telegramSetup.connectFailed"));
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop dismiss is supplementary to Escape key */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      {/* biome-ignore lint/a11y/useSemanticElements: custom modal without native dialog */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-md mx-4 rounded-2xl border border-border bg-surface-0 shadow-2xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-surface-1">
+              {TELEGRAM_SVG}
+            </div>
+            <div>
+              <div className="text-[14px] font-semibold text-text-primary">
+                Connect Telegram Bot
+              </div>
+              <div className="text-[11px] text-text-muted">
+                Paste the token from @BotFather
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label
+              htmlFor="home-telegram-bot-token"
+              className="text-[12px] font-medium text-text-primary block mb-1.5"
+            >
+              Bot Token
+            </label>
+            <input
+              id="home-telegram-bot-token"
+              type="password"
+              placeholder="e.g. 1234567890:AAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              value={botToken}
+              onChange={(e) => setBotToken(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleConnect();
+              }}
+              className="w-full px-3 py-2 text-[13px] font-mono rounded-lg border border-border bg-surface-0 text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:ring-2 focus:ring-[#229ED9]/30 focus:border-[#229ED9]"
+            />
+            <p className="text-[11px] text-text-muted mt-1.5">
+              Get this from{" "}
+              <a
+                href="https://t.me/BotFather"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#229ED9] hover:underline"
+              >
+                @BotFather
+              </a>{" "}
+              on Telegram → /newbot
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleConnect}
+            disabled={connecting || !botToken.trim()}
+            className="w-full flex justify-center items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-white rounded-lg transition-all disabled:opacity-60"
+            style={{ background: "#229ED9" }}
+          >
+            {connecting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : null}
+            {connecting ? "Connecting..." : "Connect Bot"}
+          </button>
         </div>
       </div>
     </div>
